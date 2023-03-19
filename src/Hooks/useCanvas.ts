@@ -1,87 +1,68 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Canvas {
   canvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
+class Line {
+  startX = 0;
+  startY = 0;
+  endX = 0;
+  endY = 0;
+}
+
 export const useCanvas = ({ canvasRef }: Canvas) => {
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [shape, setShape] = useState<'line' | 'rectangle'>('line');
-  const [elements, setElements] = useState<CanvasImageSource[]>([]);
+  //   const [shape, setShape] = useState<'line' | 'rectangle'>('rectangle'); // TODO implement
   const [isDrawing, setIsDrawing] = useState(false);
-  const canvasOffSetX = useRef<number | null>(null);
-  const canvasOffSetY = useRef<number | null>(null);
-  const startX = useRef<number | null>(null);
-  const startY = useRef<number | null>(null);
-
-  let canvas = canvasRef.current;
+  const [lines, setLines] = useState<Line[]>([]);
 
   useEffect(() => {
-    if (!canvas) return;
-    setContext(canvas.getContext('2d'));
-    const { left, top } = canvas.getBoundingClientRect();
-    canvasOffSetX.current = left;
-    canvasOffSetY.current = top;
-  }, [canvas]);
-
-  useLayoutEffect(() => {
-    if (!context) return;
-
-    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-    elements.forEach((element) => {
-      context.drawImage(element, 0, 0);
-    });
-  }, [elements, context]);
+    if (canvasRef.current) {
+      const renderCtx = canvasRef.current.getContext('2d');
+      if (renderCtx) {
+        setContext(renderCtx);
+      }
+    }
+  }, [canvasRef]);
 
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
     if (!context) return;
-
-    const { clientX, clientY } = event;
-    const x = clientX - canvasOffSetX.current!;
-    const y = clientY - canvasOffSetY.current!;
-
-    startX.current = x;
-    startY.current = y;
-
     setIsDrawing(true);
+    const line = new Line();
+    line.startX = event.clientX - 64;
+    line.startY = event.clientY;
+    line.endX = event.clientX - 64;
+    line.endY = event.clientY;
+    setLines((prev) => [...prev, line]);
   };
 
   const finishDrawing = () => {
     if (!context) return;
-
     setIsDrawing(false);
+    context.closePath();
+  };
+
+  const drawLines = () => {
+    if (!context) return;
+
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    lines.forEach((line) => {
+      context.beginPath();
+      context.moveTo(line.startX, line.startY);
+      context.lineTo(line.endX, line.endY);
+      context.stroke();
+    });
   };
 
   const draw = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!context || !isDrawing) return;
+    if (!isDrawing || !context) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+    const line = lines[lines.length - 1];
+    line.endX = event.clientX - 64;
+    line.endY = event.clientY;
 
-    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-    const { clientX, clientY } = event;
-    const x = clientX - canvasOffSetX.current!;
-    const y = clientY - canvasOffSetY.current!;
-
-    if (shape === 'line') {
-      context.beginPath();
-      context.moveTo(startX.current!, startY.current!);
-      context.lineTo(x, y);
-      context.stroke();
-    } else if (shape === 'rectangle') {
-      context.beginPath();
-      context.strokeRect(
-        startX.current!,
-        startY.current!,
-        x - startX.current!,
-        y - startY.current!
-      );
-    }
+    drawLines();
   };
 
   return { startDrawing, finishDrawing, draw };
