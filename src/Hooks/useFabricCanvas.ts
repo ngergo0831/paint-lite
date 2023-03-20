@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
+import { lineOptions, rectOptions } from '../config/defaultShapeOptions';
 import { DrawMode } from '../constants';
 import { DrawModeContext } from '../Providers/DrawModeProvider';
 
@@ -21,32 +22,13 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
 
       switch (mode) {
         case DrawMode.LINE:
-          shape = new fabric.Line(points, {
-            fill: 'white',
-            stroke: 'white',
-            strokeWidth: 5,
-            perPixelTargetFind: true,
-            hasControls: false,
-            lockMovementX: true,
-            lockMovementY: true,
-            borderColor: 'transparent',
-            hoverCursor: 'default'
-          });
+          shape = new fabric.Line(points, lineOptions);
           break;
         case DrawMode.RECTANGLE:
           shape = new fabric.Rect({
             left: pointer.x,
             top: pointer.y,
-            width: 0,
-            height: 0,
-            hasControls: false,
-            lockMovementX: true,
-            lockMovementY: true,
-            perPixelTargetFind: true,
-            strokeWidth: 5,
-            stroke: 'white',
-            fill: 'transparent',
-            hoverCursor: 'default'
+            ...rectOptions
           });
           break;
         default:
@@ -77,6 +59,7 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
           case DrawMode.RECTANGLE:
             const rect = activeObject as fabric.Rect;
 
+            // TODO check if this is necessary
             if (!rect.left) rect.left = 0;
             if (!rect.top) rect.top = 0;
 
