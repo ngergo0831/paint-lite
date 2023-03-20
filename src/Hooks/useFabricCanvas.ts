@@ -1,5 +1,5 @@
 import { fabric } from 'fabric';
-import { useContext, useEffect, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { lineOptions, rectOptions } from '../config/defaultShapeOptions';
 import { DrawMode } from '../constants';
 import { DrawModeContext } from '../Providers/DrawModeProvider';
@@ -7,6 +7,9 @@ import { DrawModeContext } from '../Providers/DrawModeProvider';
 interface FabricCanvasProps {
   fabricCanvas: fabric.Canvas | null;
 }
+
+let originX = 0,
+  originY = 0;
 
 export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
   const { mode } = useContext(DrawModeContext);
@@ -16,12 +19,15 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
       if (!fabricCanvas) return;
 
       const pointer = fabricCanvas.getPointer(e.e);
-      const points = [pointer.x, pointer.y, pointer.x, pointer.y];
+
+      originX = pointer.x;
+      originY = pointer.y;
 
       let shape: fabric.Line | fabric.Rect;
 
       switch (mode) {
         case DrawMode.LINE:
+          const points = [pointer.x, pointer.y, pointer.x, pointer.y];
           shape = new fabric.Line(points, lineOptions);
           break;
         case DrawMode.RECTANGLE:
@@ -46,39 +52,49 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
     () => (e: fabric.IEvent) => {
       if (!fabricCanvas) return;
 
-      const pointer = fabricCanvas.getPointer(e.e);
       const activeObject = fabricCanvas.getActiveObject();
+      if (!activeObject) return;
 
-      if (activeObject) {
-        switch (mode) {
-          case DrawMode.LINE:
-            const line = activeObject as fabric.Line;
-            line.set({ x2: pointer.x, y2: pointer.y });
-            line.setCoords();
-            break;
-          case DrawMode.RECTANGLE:
-            const rect = activeObject as fabric.Rect;
+      const pointer = fabricCanvas.getPointer(e.e);
 
-            // TODO check if this is necessary
-            if (!rect.left) rect.left = 0;
-            if (!rect.top) rect.top = 0;
+      switch (mode) {
+        case DrawMode.LINE:
+          const line = activeObject as fabric.Line;
+          line.set({ x2: pointer.x, y2: pointer.y });
+          line.setCoords();
+          break;
+        case DrawMode.RECTANGLE:
+          const rect = activeObject as fabric.Rect;
 
-            if (pointer.x > (rect.left ?? 0)) {
-              rect.set({ width: pointer.x - (rect.left ?? 0) });
-            }
-            if (pointer.y > (rect.top ?? 0)) {
-              rect.set({ height: pointer.y - (rect.top ?? 0) });
-            }
+          if (!rect.left) rect.left = 0;
+          if (!rect.top) rect.top = 0;
 
-            rect.setCoords();
-            break;
-          default:
-            break;
-        }
-        fabricCanvas.renderAll();
+          if (originX > pointer.x) {
+            rect.set({
+              left: Math.abs(pointer.x)
+            });
+          }
+          if (originY > pointer.y) {
+            rect.set({
+              top: Math.abs(pointer.y)
+            });
+          }
+
+          rect.set({
+            width: Math.abs(originX - pointer.x)
+          });
+          rect.set({
+            height: Math.abs(originY - pointer.y)
+          });
+
+          rect.setCoords();
+          break;
+        default:
+          break;
       }
+      fabricCanvas.renderAll();
     },
-    [fabricCanvas, mode]
+    [fabricCanvas, mode, originX, originY]
   );
 
   const finishDrawingLine = () => {
@@ -88,6 +104,9 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
     if (activeObject) {
       activeObject.setCoords();
     }
+
+    originX = 0;
+    originY = 0;
 
     fabricCanvas.discardActiveObject();
   };
