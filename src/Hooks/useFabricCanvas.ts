@@ -1,10 +1,15 @@
 import { fabric } from 'fabric';
+import { useContext, useEffect } from 'react';
+import { DrawMode } from '../constants';
+import { DrawModeContext } from '../Providers/DrawModeProvider';
 
 interface FabricCanvasProps {
   fabricCanvas: fabric.Canvas | null;
 }
 
 export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
+  const { mode } = useContext(DrawModeContext);
+
   const startAddingLine = (e: fabric.IEvent) => {
     if (!fabricCanvas) return;
 
@@ -63,6 +68,52 @@ export const useFabricCanvas = ({ fabricCanvas }: FabricCanvasProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (!fabricCanvas) return;
+
+    document.addEventListener('keydown', handleDeleteObject);
+
+    return () => {
+      document.removeEventListener('keydown', handleDeleteObject);
+      fabricCanvas.dispose();
+    };
+  }, [fabricCanvas]);
+
+  useEffect(() => {
+    if (!fabricCanvas) return;
+
+    if (mode === DrawMode.SELECT) {
+      fabricCanvas.getObjects().forEach((obj) => {
+        obj.set('borderColor', 'red');
+        obj.set('borderScaleFactor', 2);
+        obj.set('lockMovementX', false);
+        obj.set('lockMovementY', false);
+        obj.set('hoverCursor', 'pointer');
+      });
+
+      fabricCanvas.renderAll();
+    } else {
+      fabricCanvas.getObjects().forEach((obj) => {
+        obj.set('borderColor', 'transparent');
+        obj.set('lockMovementX', true);
+        obj.set('lockMovementY', true);
+        obj.set('hoverCursor', 'default');
+      });
+
+      fabricCanvas.on('mouse:down', startAddingLine);
+      fabricCanvas.on('mouse:move', drawLine);
+      fabricCanvas.on('mouse:up', finishDrawingLine);
+
+      fabricCanvas.discardActiveObject().renderAll();
+    }
+
+    return () => {
+      fabricCanvas.off('mouse:down', startAddingLine);
+      fabricCanvas.off('mouse:move', drawLine);
+      fabricCanvas.off('mouse:up', finishDrawingLine);
+    };
+  }, [fabricCanvas, mode]);
 
   return {
     startAddingLine,
