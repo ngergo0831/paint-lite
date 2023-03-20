@@ -7,8 +7,9 @@ export const ToolbarItemContainer = styled.div<{ isActive?: boolean }>`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.3rem;
   background-color: ${({ isActive }) => (isActive ? '#f5f5f5' : 'transparent')};
+  transition: all 0.2s ease-in-out;
 
   &:hover {
     background-color: #f5f5f5;
@@ -21,5 +22,6 @@ export const ToolbarItemContainer = styled.div<{ isActive?: boolean }>`
 
 export const ToolbarItemLabel = styled.div`
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.75rem;
+  text-transform: capitalize;
 `;

@@ -1,12 +1,16 @@
-import { createContext } from 'react';
+import { createContext, useState } from 'react';
 import { DrawMode } from '../constants';
 
 interface DrawModeProviderProps {
   children: JSX.Element;
 }
 
-const DrawModeContext = createContext(DrawMode.LINE);
+export const DrawModeContext = createContext({
+  mode: DrawMode.LINE,
+  setMode: (mode: DrawMode) => {}
+});
 
 export const DrawModeProvider = ({ children }: DrawModeProviderProps) => {
-  return <DrawModeContext.Provider value={DrawMode.LINE}>{children}</DrawModeContext.Provider>;
+  const [mode, setMode] = useState(DrawMode.LINE);
+  return <DrawModeContext.Provider value={{ mode, setMode }}>{children}</DrawModeContext.Provider>;
 };
