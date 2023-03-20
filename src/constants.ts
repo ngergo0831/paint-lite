@@ -1,4 +1,4 @@
-export const ToolbarWidth = 64;
+export const ToolbarWidth = 80;
 
 export enum DrawMode {
   LINE = 'line',

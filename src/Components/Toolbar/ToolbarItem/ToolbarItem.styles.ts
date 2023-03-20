@@ -7,16 +7,20 @@ export const ToolbarItemContainer = styled.div<{ isActive?: boolean }>`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.3rem;
+  margin: 0.3rem;
+  padding: 0.5rem 0;
   background-color: ${({ isActive }) => (isActive ? '#f5f5f5' : 'transparent')};
+  color: ${({ isActive }) => (isActive ? 'black' : 'white')};
   transition: all 0.2s ease-in-out;
 
   &:hover {
     background-color: #f5f5f5;
+    color: black;
   }
 
   &:active {
     background-color: #e8e8e8;
+    color: black;
   }
 `;
 
