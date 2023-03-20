@@ -17,3 +17,8 @@ Requirements and notes:
 - The application must be easily extendible with other shapes and tools - think of architecture not only code.
 
 - Give deployment instructions
+
+## Start the application
+- Clone the repository from github
+- run `nvm use` and `npm i`
+- with `npm run start` the app starts

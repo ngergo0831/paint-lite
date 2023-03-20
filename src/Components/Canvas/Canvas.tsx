@@ -1,21 +1,28 @@
-import { useRef } from 'react';
-import { useCanvas } from '../../Hooks/useCanvas';
+import { useLayoutEffect, useRef, useState } from 'react';
 import * as S from './Canvas.styles';
+import { fabric } from 'fabric';
+import { ToolbarWidth } from '../../constants';
+import { useFabricCanvas } from '../../Hooks/useFabricCanvas';
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
 
-  const { startDrawing, finishDrawing, draw } = useCanvas({ canvasRef });
+  useFabricCanvas({ fabricCanvas });
+
+  useLayoutEffect(() => {
+    const canvas = new fabric.Canvas(canvasRef.current, {
+      selection: false
+    });
+
+    setFabricCanvas(canvas);
+  }, []);
 
   return (
     <S.CanvasContainer>
       <canvas
         ref={canvasRef}
-        onMouseDown={startDrawing as any}
-        onMouseMove={draw as any}
-        onMouseUp={finishDrawing}
-        onMouseLeave={finishDrawing}
-        width={window.innerWidth - 64}
+        width={window.innerWidth - ToolbarWidth}
         height={window.innerHeight}
       ></canvas>
     </S.CanvasContainer>
