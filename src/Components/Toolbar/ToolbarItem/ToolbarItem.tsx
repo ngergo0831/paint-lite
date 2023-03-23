@@ -21,7 +21,7 @@ export const ToolbarItem = ({ icon, context, size = 'xl' }: ToolbarItemProps) =>
   };
 
   return (
-    <S.ToolbarItemContainer onClick={handleClick} isActive={mode === context}>
+    <S.ToolbarItemContainer onClick={handleClick} isActive={mode === context} data-testid={`toolbar-item-${context}`}>
       <FontAwesomeIcon icon={icon} size={size} />
       <S.ToolbarItemLabel>{context}</S.ToolbarItemLabel>
     </S.ToolbarItemContainer>

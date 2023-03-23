@@ -11,11 +11,8 @@ User claims (s)he usually needs to change the sketch after the shapes are put do
 Requirements and notes:
 
 - Use typescript
-
 - You are allowed to use any 3rd party library or framework
-
 - The application must be easily extendible with other shapes and tools - think of architecture not only code.
-
 - Give deployment instructions
 
 ## Start the application
